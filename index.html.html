@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Training</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  background: #0d0d0d;
+  color: #f2efe9;
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+/* SCREENS */
+.page { display: none; }
+.page.active { display: block; }
+
+/* TOP BAR */
+.topbar {
+  background: #0d0d0d;
+  border-bottom: 1px solid #2a2a2a;
+  padding: 14px 18px 12px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.topbar-title { font-size: 17px; font-weight: 600; }
+.topbar-btn {
+  background: none; border: none;
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  font-size: 15px; cursor: pointer;
+  padding: 6px 0; min-width: 56px;
+}
+.topbar-btn.left { color: #7a7a7a; text-align: left; }
+.topbar-btn.right { color: #ef4444; text-align: right; }
+.topbar-space { min-width: 56px; }
+
+/* HOME */
+.home-head { padding: 20px 18px 16px; border-bottom: 1px solid #2a2a2a; }
+.home-title { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+.home-title span { color: #c9f23a; }
+.home-week { font-size: 11px; font-family: 'SF Mono', monospace; color: #7a7a7a; margin-top: 8px; }
+
+.stats-row {
+  display: -webkit-box;
+  display: flex;
+  gap: 8px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #2a2a2a;
+}
+.stat-box { flex: 1; background: #1a1a1a; border-radius: 10px; padding: 10px 10px 10px 12px; border: 1px solid #2a2a2a; }
+.stat-label { font-size: 10px; font-family: 'SF Mono', monospace; color: #404040; text-transform: uppercase; letter-spacing: .07em; }
+.stat-val { font-size: 22px; font-weight: 700; margin-top: 2px; }
+.stat-val.green { color: #c9f23a; }
+
+/* DAY CARDS */
+.day-list { padding: 14px 16px; }
+.day-card {
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.day-card.done { border-color: rgba(34,197,94,0.5); }
+.day-card-top {
+  padding: 16px 15px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.day-card-top:active { background: #1e1e1e; }
+.day-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; -webkit-flex-shrink: 0; }
+.day-dot.push { background: #ff6b35; }
+.day-dot.pull { background: #38bdf8; }
+.day-dot.legs { background: #a855f7; }
+.day-info { flex: 1; -webkit-flex: 1; }
+.day-name { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; }
+.day-sub { font-size: 12px; color: #7a7a7a; margin-top: 2px; font-family: 'SF Mono', monospace; }
+.day-right { text-align: right; }
+.day-count { font-size: 11px; font-family: 'SF Mono', monospace; color: #404040; }
+.day-done-badge {
+  display: inline-block; margin-top: 4px;
+  font-size: 10px; font-family: 'SF Mono', monospace; letter-spacing: .06em;
+  color: #22c55e; background: rgba(34,197,94,0.13);
+  padding: 3px 7px; border-radius: 4px;
+}
+.day-hist-btn {
+  width: 100%; padding: 10px 15px;
+  background: #1a1a1a; border: none; border-top: 1px solid #2a2a2a;
+  color: #555; font-family: 'SF Mono', monospace; font-size: 11px;
+  text-align: left; cursor: pointer; letter-spacing: .04em;
+  display: block;
+}
+.day-hist-btn:active { background: #2a2a2a; }
+
+/* SESSION */
+.sess-head { padding: 16px 18px 12px; border-bottom: 1px solid #2a2a2a; }
+.sess-tag { font-size: 11px; font-family: 'SF Mono', monospace; color: #404040; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px; }
+.sess-title { font-size: 23px; font-weight: 700; letter-spacing: -0.4px; }
+.sess-type { font-size: 12px; color: #7a7a7a; font-family: 'SF Mono', monospace; margin-top: 3px; }
+
+/* EXERCISE CARDS */
+.ex-wrap { padding: 12px 16px; }
+.ex-card {
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 14px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.ex-head {
+  padding: 14px 15px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  justify-content: space-between;
+  cursor: pointer;
+}
+.ex-head:active { background: #1e1e1e; }
+.ex-head-left { flex: 1; -webkit-flex: 1; min-width: 0; }
+.ex-name { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; line-height: 1.25; }
+.ex-sum { font-size: 11px; font-family: 'SF Mono', monospace; color: #7a7a7a; margin-top: 4px; }
+.ex-tag {
+  display: inline-block; font-size: 9px; font-family: 'SF Mono', monospace;
+  text-transform: uppercase; letter-spacing: .08em;
+  padding: 2px 6px; border-radius: 3px; margin-left: 7px; vertical-align: middle;
+}
+.ex-tag.f { background: rgba(255,107,53,.18); color: #ff6b35; }
+.ex-tag.k { background: rgba(168,85,247,.18); color: #a855f7; }
+.ex-chev { color: #404040; font-size: 11px; flex-shrink: 0; -webkit-flex-shrink: 0; margin-left: 8px; transition: transform .2s; }
+.ex-card.open .ex-chev { -webkit-transform: rotate(180deg); transform: rotate(180deg); }
+.ex-body { display: none; border-top: 1px solid #2a2a2a; padding: 13px 15px; }
+.ex-card.open .ex-body { display: block; }
+
+/* REF */
+.ref-box {
+  background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 9px;
+  padding: 9px 12px; margin-bottom: 12px;
+}
+.ref-label { font-size: 10px; font-family: 'SF Mono', monospace; color: #404040; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 5px; }
+.ref-line {
+  display: -webkit-box; display: flex;
+  -webkit-box-pack: justify; justify-content: space-between;
+  -webkit-box-align: baseline; align-items: baseline;
+  margin-bottom: 3px;
+}
+.ref-ago { font-size: 11px; font-family: 'SF Mono', monospace; color: #404040; }
+.ref-val { font-size: 12px; font-family: 'SF Mono', monospace; color: #7a7a7a; }
+.ref-val b { color: #c9f23a; font-weight: 600; }
+
+/* SETS */
+.sets-head {
+  display: -webkit-box; display: flex;
+  gap: 6px; margin-bottom: 6px; padding: 0 2px;
+  -webkit-box-align: center; align-items: center;
+}
+.sets-head-num { width: 24px; font-size: 10px; font-family: 'SF Mono', monospace; color: #404040; text-transform: uppercase; letter-spacing: .07em; text-align: center; flex-shrink: 0; -webkit-flex-shrink: 0; }
+.sets-head-col { flex: 1; -webkit-flex: 1; font-size: 10px; font-family: 'SF Mono', monospace; color: #404040; text-transform: uppercase; letter-spacing: .07em; text-align: center; }
+.sets-head-chk { width: 44px; flex-shrink: 0; -webkit-flex-shrink: 0; }
+
+.set-row {
+  display: -webkit-box; display: flex;
+  gap: 6px; margin-bottom: 7px;
+  -webkit-box-align: center; align-items: center;
+}
+.set-num { width: 24px; font-size: 12px; font-family: 'SF Mono', monospace; color: #404040; text-align: center; flex-shrink: 0; -webkit-flex-shrink: 0; }
+.set-inp {
+  flex: 1; -webkit-flex: 1;
+  background: #1a1a1a; border: 1px solid #363636; border-radius: 9px;
+  padding: 13px 4px;
+  color: #f2efe9; font-family: 'SF Mono', monospace; font-size: 19px; font-weight: 500;
+  text-align: center; width: 100%;
+  -webkit-appearance: none; appearance: none;
+}
+.set-inp:focus { outline: none; border-color: #c9f23a; background: rgba(201,242,58,.07); }
+.set-inp::-webkit-input-placeholder { color: #404040; }
+.set-chk {
+  width: 44px; height: 44px; border-radius: 9px; flex-shrink: 0; -webkit-flex-shrink: 0;
+  background: #1a1a1a; border: 1px solid #363636;
+  cursor: pointer; font-size: 20px; color: #404040;
+  display: -webkit-box; display: flex;
+  -webkit-box-align: center; align-items: center;
+  -webkit-box-pack: center; justify-content: center;
+}
+.set-chk.on { background: rgba(201,242,58,.11); border-color: #c9f23a; color: #c9f23a; }
+.set-chk:active { opacity: .7; }
+
+.add-set-btn {
+  background: none; border: none; color: #c9f23a;
+  font-family: 'SF Mono', monospace; font-size: 12px;
+  letter-spacing: .05em; text-transform: uppercase;
+  cursor: pointer; padding: 6px 0 3px; display: block;
+}
+.note-field {
+  width: 100%; margin-top: 10px; padding: 10px;
+  background: #1a1a1a; border: 1px solid #363636; border-radius: 9px;
+  color: #f2efe9; font-family: 'SF Mono', monospace; font-size: 13px;
+  resize: none; line-height: 1.5;
+  -webkit-appearance: none; appearance: none;
+}
+.note-field:focus { outline: none; border-color: #c9f23a; }
+.note-field::-webkit-input-placeholder { color: #404040; }
+
+/* SAVE */
+.save-area { padding: 14px 16px 32px; }
+.save-btn {
+  width: 100%; padding: 17px;
+  background: #c9f23a; color: #0d0d0d;
+  border: none; border-radius: 13px;
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  font-size: 17px; font-weight: 700;
+  cursor: pointer;
+}
+.save-btn:active { opacity: .85; }
+
+/* HISTORY */
+.hist-head { padding: 14px 18px 12px; border-bottom: 1px solid #2a2a2a; }
+.hist-title { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+.hist-sub { font-size: 12px; font-family: 'SF Mono', monospace; color: #7a7a7a; margin-top: 3px; }
+.hist-tabs {
+  display: -webkit-box; display: flex;
+  gap: 6px; padding: 10px 16px; border-bottom: 1px solid #2a2a2a;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.hist-tabs::-webkit-scrollbar { display: none; }
+.hist-tab {
+  flex-shrink: 0; -webkit-flex-shrink: 0;
+  padding: 6px 14px; border-radius: 20px;
+  border: 1px solid #363636; background: none;
+  color: #7a7a7a; font-family: 'SF Mono', monospace; font-size: 12px;
+  cursor: pointer; white-space: nowrap;
+}
+.hist-tab.on { background: #f2efe9; color: #0d0d0d; border-color: transparent; }
+.hist-list { padding: 12px 16px; }
+.hist-block {
+  background: #161616; border: 1px solid #2a2a2a; border-radius: 14px;
+  margin-bottom: 10px; overflow: hidden;
+}
+.hist-date { padding: 9px 14px; background: #1a1a1a; border-bottom: 1px solid #2a2a2a; font-size: 11px; font-family: 'SF Mono', monospace; color: #7a7a7a; letter-spacing: .04em; }
+.hist-ex { padding: 11px 14px; border-bottom: 1px solid #2a2a2a; }
+.hist-ex:last-child { border-bottom: none; }
+.hist-ex-name { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.hist-set-row { display: -webkit-box; display: flex; gap: 8px; -webkit-box-align: center; align-items: center; margin-bottom: 3px; }
+.hist-set-n { font-size: 10px; font-family: 'SF Mono', monospace; color: #404040; min-width: 20px; }
+.hist-set-v { font-size: 13px; font-family: 'SF Mono', monospace; }
+.hist-set-v .kg { color: #c9f23a; font-weight: 600; }
+.hist-set-v .sep { color: #404040; margin: 0 3px; }
+.hist-set-v .ok { color: #22c55e; font-size: 11px; margin-left: 3px; }
+.hist-note { font-size: 11px; font-family: 'SF Mono', monospace; color: #404040; margin-top: 5px; font-style: italic; }
+.hist-empty { text-align: center; padding: 40px 20px; font-family: 'SF Mono', monospace; font-size: 12px; color: #404040; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 40px; left: 50%;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+  background: #c9f23a; color: #0d0d0d;
+  font-family: 'SF Mono', monospace; font-size: 12px; font-weight: 700;
+  letter-spacing: .07em; text-transform: uppercase;
+  padding: 11px 22px; border-radius: 30px; z-index: 999;
+  opacity: 0; pointer-events: none;
+  -webkit-transition: opacity .25s; transition: opacity .25s;
+  white-space: nowrap;
+}
+.toast.on { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- HOME -->
+<div class="page active" id="p-home">
+  <div class="topbar">
+    <div class="topbar-title">Training</div>
+  </div>
+  <div class="home-head">
+    <div class="home-title">5 jours<span>.</span></div>
+    <div class="home-week" id="hw">—</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-label">Semaine</div><div class="stat-val green" id="sw">0/5</div></div>
+    <div class="stat-box"><div class="stat-label">Total</div><div class="stat-val" id="st">0</div></div>
+    <div class="stat-box"><div class="stat-label">Semaines</div><div class="stat-val" id="ss">0</div></div>
+  </div>
+  <div class="day-list" id="day-list"></div>
+</div>
+
+<!-- SESSION -->
+<div class="page" id="p-sess">
+  <div class="topbar">
+    <button class="topbar-btn left" onclick="goHome()">← Retour</button>
+    <div class="topbar-title" id="sess-nav-t"></div>
+    <button class="topbar-btn right" onclick="doClear()">Effacer</button>
+  </div>
+  <div class="sess-head">
+    <div class="sess-tag" id="sess-tag"></div>
+    <div class="sess-title" id="sess-title"></div>
+    <div class="sess-type" id="sess-type"></div>
+  </div>
+  <div class="ex-wrap" id="ex-wrap"></div>
+  <div class="save-area">
+    <button class="save-btn" onclick="saveSession()">Sauvegarder la séance</button>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="p-hist">
+  <div class="topbar">
+    <button class="topbar-btn left" onclick="goHome()">← Retour</button>
+    <div class="topbar-title" id="hist-nav-t"></div>
+    <div class="topbar-space"></div>
+  </div>
+  <div class="hist-head">
+    <div class="hist-title" id="hist-title"></div>
+    <div class="hist-sub" id="hist-sub"></div>
+  </div>
+  <div class="hist-tabs" id="hist-tabs"></div>
+  <div class="hist-list" id="hist-list"></div>
+</div>
+
+<script>
+var PLAN = [
+  { id:0, day:'LUN', label:'Push', type:'pecs · épaules · triceps', color:'push',
+    exos:[
+      {n:'Développé couché haltères', t:'f'},
+      {n:'Écarté poulie basse croisée', t:''},
+      {n:'Développé militaire haltères assis', t:''},
+      {n:'Élévations latérales haltères', t:''},
+      {n:'Dips lestés', t:''},
+      {n:'Extension triceps poulie haute', t:''}
+    ]},
+  { id:1, day:'MAR', label:'Pull', type:'dos · biceps · épaules arrière', color:'pull',
+    exos:[
+      {n:'Tractions pronation lestées', t:'f'},
+      {n:'Tirage horizontal poulie basse', t:''},
+      {n:'Tirage nuque poulie haute', t:''},
+      {n:'Oiseau haltères — rear delt', t:''},
+      {n:'Curl haltères alterné', t:''},
+      {n:'Curl marteau haltères', t:''}
+    ]},
+  { id:2, day:'MER', label:'Legs', type:'quads · ischio · fessiers — LCA', color:'legs',
+    exos:[
+      {n:'Bulgarian split squat haltères', t:'k'},
+      {n:'Leg extension machine', t:'k'},
+      {n:'Romanian deadlift haltères', t:''},
+      {n:'Fentes marchées haltères', t:'k'},
+      {n:'Hip thrust barre', t:''},
+      {n:'Mollets debout', t:''}
+    ]},
+  { id:3, day:'JEU', label:'Push+', type:'pecs · épaules · triceps (variation)', color:'push',
+    exos:[
+      {n:'Développé incliné haltères', t:'f'},
+      {n:'Pompes lestées', t:''},
+      {n:'Arnold press haltères', t:''},
+      {n:'Face pull à la poulie', t:''},
+      {n:'Skull crusher EZ', t:''},
+      {n:'Élévations frontales haltères', t:''}
+    ]},
+  { id:4, day:'VEN', label:'Pull+', type:'dos · biceps · core', color:'pull',
+    exos:[
+      {n:'Soulevé de terre roumain barre', t:'f'},
+      {n:'Tirage horizontal haltères', t:''},
+      {n:'Tirage poulie haute prise large', t:''},
+      {n:'Curl incliné haltères', t:''},
+      {n:'Gainage obliques / Russian twist', t:''},
+      {n:'Crunchs à la poulie', t:''}
+    ]}
+];
+
+/* ── STORAGE ── */
+var MEM = { done:{}, hist:{} };
+
+function tryLS() {
+  try {
+    var d = localStorage.getItem('tdb2');
+    if (d) MEM = JSON.parse(d);
+  } catch(e) {}
+}
+function saveLS() {
+  try { localStorage.setItem('tdb2', JSON.stringify(MEM)); } catch(e) {}
+}
+tryLS();
+
+function weekKey() {
+  var n = new Date(), j = new Date(n.getFullYear(),0,1);
+  var w = Math.ceil(((n-j)/864e5 + j.getDay() + 1) / 7);
+  return n.getFullYear() + '-W' + (w < 10 ? '0'+w : w);
+}
+
+function isDone(id) { var wk = weekKey(); return !!(MEM.done[wk] && MEM.done[wk][id]); }
+function markDone(id) { var wk = weekKey(); if (!MEM.done[wk]) MEM.done[wk] = {}; MEM.done[wk][id] = true; saveLS(); }
+function getHist(id) { return MEM.hist[id] || []; }
+function pushHist(id, e) { if (!MEM.hist[id]) MEM.hist[id] = []; MEM.hist[id].unshift(e); if (MEM.hist[id].length > 14) MEM.hist[id].pop(); saveLS(); }
+function totalSess() { var t=0; for (var i=0;i<PLAN.length;i++) t += getHist(PLAN[i].id).length; return t; }
+function totalWeeks() { var s={}; for (var i=0;i<PLAN.length;i++) { var h=getHist(PLAN[i].id); for(var j=0;j<h.length;j++) s[h[j].wk]=1; } return Object.keys(s).length; }
+
+/* ── STATE ── */
+var curDay = 0;
+var STA = {};
+
+/* ── HOME ── */
+function renderHome() {
+  var wk = weekKey();
+  var n = new Date();
+  var DAYS = ['dim','lun','mar','mer','jeu','ven','sam'];
+  var MON = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  document.getElementById('hw').textContent = 'Semaine ' + wk.split('-W')[1] + ' · ' + DAYS[n.getDay()] + ' ' + n.getDate() + ' ' + MON[n.getMonth()];
+  var dc = 0; for (var i=0;i<PLAN.length;i++) if (isDone(PLAN[i].id)) dc++;
+  document.getElementById('sw').textContent = dc + '/5';
+  document.getElementById('st').textContent = totalSess();
+  document.getElementById('ss').textContent = totalWeeks();
+
+  var list = document.getElementById('day-list');
+  list.innerHTML = '';
+
+  for (var di = 0; di < PLAN.length; di++) {
+    (function(d) {
+      var done = isDone(d.id);
+      var hc = getHist(d.id).length;
+
+      var card = document.createElement('div');
+      card.className = 'day-card' + (done ? ' done' : '');
+
+      var top = document.createElement('div');
+      top.className = 'day-card-top';
+      top.innerHTML =
+        '<div class="day-dot ' + d.color + '"></div>' +
+        '<div class="day-info">' +
+          '<div class="day-name">' + d.day + ' — ' + d.label + '</div>' +
+          '<div class="day-sub">' + d.type + '</div>' +
+        '</div>' +
+        '<div class="day-right">' +
+          '<div class="day-count">' + d.exos.length + ' exos</div>' +
+          (done ? '<div class="day-done-badge">✓ fait</div>' : '') +
+        '</div>';
+      top.onclick = (function(id){ return function(){ openSess(id); }; })(d.id);
+      card.appendChild(top);
+
+      if (hc > 0) {
+        var hbtn = document.createElement('button');
+        hbtn.className = 'day-hist-btn';
+        hbtn.textContent = '↳ historique · ' + hc + ' séance' + (hc > 1 ? 's' : '');
+        hbtn.onclick = (function(id){ return function(e){ e.stopPropagation(); openHist(id); }; })(d.id);
+        card.appendChild(hbtn);
+      }
+      list.appendChild(card);
+    })(PLAN[di]);
+  }
+}
+
+/* ── SESSION ── */
+function openSess(dayId) {
+  curDay = dayId;
+  STA = {};
+  var d = PLAN[dayId];
+
+  document.getElementById('sess-nav-t').textContent = d.day + ' · ' + d.label;
+  document.getElementById('sess-tag').textContent = d.day + ' · séance';
+  document.getElementById('sess-title').textContent = d.label;
+  document.getElementById('sess-type').textContent = d.type;
+
+  var wrap = document.getElementById('ex-wrap');
+  wrap.innerHTML = '';
+
+  for (var ei = 0; ei < d.exos.length; ei++) {
+    (function(ei) {
+      var ex = d.exos[ei];
+      var hist = getHist(dayId);
+      var lastSess = hist[0] || null;
+      var prevSess = hist[1] || null;
+      var lastEx = lastSess && lastSess.exos && lastSess.exos[ei] ? lastSess.exos[ei] : null;
+      var prevEx = prevSess && prevSess.exos && prevSess.exos[ei] ? prevSess.exos[ei] : null;
+
+      var rows;
+      if (lastEx && lastEx.sets && lastEx.sets.length >= 1) {
+        rows = lastEx.sets.map(function(s){ return {kg: s.kg||'', reps: s.reps||'', done: false}; });
+        if (rows.length < 2) rows.push({kg:'', reps:'', done:false});
+      } else {
+        rows = [{kg:'',reps:'',done:false},{kg:'',reps:'',done:false}];
+      }
+      STA[ei] = {rows: rows, note: ''};
+
+      function fmtSets(ex) {
+        if (!ex || !ex.sets) return '—';
+        var p = ex.sets.filter(function(s){return s.kg||s.reps;}).map(function(s){
+          return '<b>'+(s.kg||'—')+'kg</b>×'+(s.reps||'—');
+        }).join(' / ');
+        return p || '—';
+      }
+
+      var refH = '';
+      if (lastEx || prevEx) {
+        refH = '<div class="ref-box"><div class="ref-label">Référence charges</div>';
+        if (lastEx) refH += '<div class="ref-line"><span class="ref-ago">Dernière · '+(lastEx.date||'')+'</span><span class="ref-val">'+fmtSets(lastEx)+'</span></div>';
+        if (prevEx) refH += '<div class="ref-line"><span class="ref-ago">Avant · '+(prevEx.date||'')+'</span><span class="ref-val">'+fmtSets(prevEx)+'</span></div>';
+        refH += '</div>';
+      }
+
+      var tagH = ex.t === 'f' ? '<span class="ex-tag f">priorité</span>' : ex.t === 'k' ? '<span class="ex-tag k">genoux</span>' : '';
+
+      var card = document.createElement('div');
+      card.className = 'ex-card';
+      card.id = 'ec' + ei;
+      card.innerHTML =
+        '<div class="ex-head" id="eh'+ei+'">' +
+          '<div class="ex-head-left">' +
+            '<div class="ex-name">' + ex.n + tagH + '</div>' +
+            '<div class="ex-sum" id="esum'+ei+'">2 séries effectives</div>' +
+          '</div>' +
+          '<div class="ex-chev">▼</div>' +
+        '</div>' +
+        '<div class="ex-body" id="eb'+ei+'">' +
+          refH +
+          '<div class="sets-head">' +
+            '<div class="sets-head-num">#</div>' +
+            '<div class="sets-head-col">kg</div>' +
+            '<div class="sets-head-col">reps</div>' +
+            '<div class="sets-head-chk"></div>' +
+          '</div>' +
+          '<div id="srows'+ei+'"></div>' +
+          '<button class="add-set-btn" id="asb'+ei+'">+ série</button>' +
+          '<textarea class="note-field" rows="2" placeholder="Notes..." id="nf'+ei+'"></textarea>' +
+        '</div>';
+
+      wrap.appendChild(card);
+
+      document.getElementById('eh'+ei).onclick = function() {
+        var c = document.getElementById('ec'+ei);
+        c.classList.toggle('open');
+      };
+      document.getElementById('asb'+ei).onclick = function() {
+        STA[ei].rows.push({kg:'',reps:'',done:false});
+        buildRows(ei);
+      };
+      document.getElementById('nf'+ei).addEventListener('input', function() {
+        STA[ei].note = this.value;
+      });
+
+      buildRows(ei);
+    })(ei);
+  }
+
+  show('p-sess');
+  window.scrollTo(0, 0);
+}
+
+function buildRows(ei) {
+  var cont = document.getElementById('srows'+ei);
+  if (!cont) return;
+  cont.innerHTML = '';
+  var rows = STA[ei].rows;
+  for (var si = 0; si < rows.length; si++) {
+    (function(si) {
+      var r = rows[si];
+      var row = document.createElement('div');
+      row.className = 'set-row';
+      row.innerHTML =
+        '<div class="set-num">'+(si+1)+'</div>' +
+        '<input class="set-inp" type="number" inputmode="decimal" placeholder="—" value="'+(r.kg||'')+'" id="kg'+ei+'_'+si+'">' +
+        '<input class="set-inp" type="number" inputmode="numeric" placeholder="—" value="'+(r.reps||'')+'" id="rp'+ei+'_'+si+'">' +
+        '<button class="set-chk'+(r.done?' on':'')+'" id="ck'+ei+'_'+si+'">✓</button>';
+      cont.appendChild(row);
+
+      document.getElementById('kg'+ei+'_'+si).addEventListener('input', function(){
+        STA[ei].rows[si].kg = this.value; updSum(ei);
+      });
+      document.getElementById('rp'+ei+'_'+si).addEventListener('input', function(){
+        STA[ei].rows[si].reps = this.value; updSum(ei);
+      });
+      document.getElementById('ck'+ei+'_'+si).onclick = function(){
+        STA[ei].rows[si].done = !STA[ei].rows[si].done;
+        this.classList.toggle('on', STA[ei].rows[si].done);
+        updSum(ei);
+      };
+    })(si);
+  }
+  updSum(ei);
+}
+
+function updSum(ei) {
+  var rows = STA[ei].rows;
+  var filled = rows.filter(function(r){return r.kg||r.reps;});
+  var dn = rows.filter(function(r){return r.done;}).length;
+  var t = rows.length + ' série' + (rows.length > 1 ? 's' : '');
+  if (filled.length > 0) {
+    if (filled[0].kg) t += ' · ' + filled[0].kg + 'kg';
+    if (filled[0].reps) t += ' ×' + filled[0].reps;
+    if (filled.length > 1 && filled[1].kg && filled[1].kg !== filled[0].kg) t += ' / ' + filled[1].kg + 'kg';
+  }
+  if (dn) t += ' · ' + dn + '✓';
+  var el = document.getElementById('esum'+ei);
+  if (el) el.textContent = t;
+}
+
+function saveSession() {
+  var d = PLAN[curDay];
+  var n = new Date();
+  var MON = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  var dt = n.getDate() + ' ' + MON[n.getMonth()];
+  var wk = weekKey();
+
+  var exArr = [];
+  for (var ei = 0; ei < d.exos.length; ei++) {
+    exArr.push({
+      name: d.exos[ei].n,
+      date: dt,
+      sets: STA[ei].rows.map(function(r){ return {kg:r.kg, reps:r.reps, done:r.done}; }),
+      note: STA[ei].note
+    });
+  }
+  pushHist(curDay, {date:dt, wk:wk, exos:exArr});
+  markDone(curDay);
+  toast('Séance sauvegardée ✓');
+  setTimeout(goHome, 800);
+}
+
+function doClear() {
+  if (window.confirm('Effacer les données saisies ?')) openSess(curDay);
+}
+
+/* ── HISTORY ── */
+var hDay = 0, hFilter = 'all';
+
+function openHist(dayId) {
+  hDay = dayId; hFilter = 'all';
+  var d = PLAN[dayId];
+  var hist = getHist(dayId);
+  document.getElementById('hist-nav-t').textContent = d.day + ' · ' + d.label;
+  document.getElementById('hist-title').textContent = d.label + ' — Historique';
+  document.getElementById('hist-sub').textContent = d.type + ' · ' + hist.length + ' séance' + (hist.length>1?'s':'');
+  buildHistTabs(hist);
+  renderHist();
+  show('p-hist');
+  window.scrollTo(0,0);
+}
+
+function buildHistTabs(hist) {
+  var tabs = document.getElementById('hist-tabs');
+  tabs.innerHTML = '';
+  var weeks = [], seen = {};
+  for (var i=0;i<hist.length;i++) { if (!seen[hist[i].wk]) { seen[hist[i].wk]=1; weeks.push(hist[i].wk); } }
+
+  function mkT(lbl, flt) {
+    var b = document.createElement('button');
+    b.className = 'hist-tab' + (hFilter===flt?' on':'');
+    b.textContent = lbl;
+    b.onclick = (function(f,btn){ return function(){
+      hFilter = f;
+      var all = document.querySelectorAll('.hist-tab');
+      for (var i=0;i<all.length;i++) all[i].classList.remove('on');
+      btn.classList.add('on');
+      renderHist();
+    }; })(flt, b);
+    tabs.appendChild(b);
+  }
+  mkT('Tout','all');
+  for (var i=0;i<Math.min(weeks.length,6);i++) mkT('S'+weeks[i].split('-W')[1], weeks[i]);
+}
+
+function renderHist() {
+  var hist = getHist(hDay);
+  var fil = hFilter==='all' ? hist : hist.filter(function(e){return e.wk===hFilter;});
+  var cont = document.getElementById('hist-list');
+  cont.innerHTML = '';
+  if (!fil.length) { cont.innerHTML = '<div class="hist-empty">Aucune séance pour cette période</div>'; return; }
+  for (var i=0;i<fil.length;i++) {
+    var entry = fil[i];
+    var exH = '';
+    if (entry.exos) {
+      for (var j=0;j<entry.exos.length;j++) {
+        var ex = entry.exos[j];
+        var fs = (ex.sets||[]).filter(function(s){return s.kg||s.reps;});
+        if (!fs.length) continue;
+        var sh = fs.map(function(s,si){
+          return '<div class="hist-set-row"><span class="hist-set-n">S'+(si+1)+'</span><span class="hist-set-v"><span class="kg">'+(s.kg||'—')+' kg</span><span class="sep">×</span>'+(s.reps||'—')+(s.done?'<span class="ok">✓</span>':'')+'</span></div>';
+        }).join('');
+        exH += '<div class="hist-ex"><div class="hist-ex-name">'+ex.name+'</div>'+sh+(ex.note?'<div class="hist-note">"'+ex.note+'"</div>':'')+'</div>';
+      }
+    }
+    if (!exH) continue;
+    var bl = document.createElement('div');
+    bl.className = 'hist-block';
+    bl.innerHTML = '<div class="hist-date">'+entry.date+' · S'+entry.wk.split('-W')[1]+'</div>'+exH;
+    cont.appendChild(bl);
+  }
+}
+
+/* ── UTILS ── */
+function goHome() { renderHome(); show('p-home'); window.scrollTo(0,0); }
+
+function show(id) {
+  var pages = document.querySelectorAll('.page');
+  for (var i=0;i<pages.length;i++) pages[i].classList.remove('active');
+  document.getElementById(id).classList.add('active');
+}
+
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  setTimeout(function(){ t.classList.remove('on'); }, 2500);
+}
+
+/* ── BOOT ── */
+renderHome();
+</script>
+</body>
+</html>
